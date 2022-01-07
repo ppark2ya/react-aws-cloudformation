@@ -1,46 +1,113 @@
-# Getting Started with Create React App
+# AWS CloudFormation + Serverless deploy
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+- [AWS CloudFormation + Serverless deploy](#aws-cloudformation--serverless-deploy)
+  - [AWS CloudFormation](#aws-cloudformation)
+  - [Serverless](#serverless)
+  - [CloudFront Origin Access Identity(OAI)](#cloudfront-origin-access-identityoai)
+  - [Project setup (ex. Reactjs)](#project-setup-ex-reactjs)
+  - [Local deploy](#local-deploy)
+    - [aws credential](#aws-credential)
+    - [AWS CloudFormation References](#aws-cloudformation-references)
+    - [Purge CDN](#purge-cdn)
 
-## Available Scripts
+## AWS CloudFormation
 
-In the project directory, you can run:
+- CloudFormation은 Amazon Web Services(AWS) 리소스를 자동으로 생성해 주는 서비스이다. 사용하려는 AWS 리소스를 템플릿 파일로 작성하면, CloudFormation이 이를 분석해서 AWS 리소스를 생성한다. 이렇게 생성된 리소스를 스택이라고 한다.
+- CloudFormation은 템플릿 작성, 템플릿 업로드, 스택 생성, 스택 설정 및 리소스 생성의 4단계로 실행된다.
+- 템플릿은 [CloudFormation 디자이너](https://console.aws.amazon.com/cloudformation/designer)에서 작성할 수 있다.
+- [reference](https://medium.com/pplink/aws-cloudformation%EC%9C%BC%EB%A1%9C-%EC%9D%B8%ED%94%84%EB%9D%BC-%EC%9E%90%EB%8F%99%ED%99%94-%EC%8B%9C%EC%9E%91%ED%95%98%EA%B8%B0-9fe13cdf08c9)
 
-### `npm start`
+## Serverless
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+- 서버를 직접 관리할 필요가 없는 아키텍처
+- AWS CloudFormation + Serverless 조합은 IaaS(Infrastructure as a Service). 인프라 가상화
+  - 시스템에서 필요한 모든 인프라 자원(네트워크, 스토리지, 서버)까지 가상화한 방식
+- references
+  - https://jaehoney.tistory.com/77
+  - https://pearlluck.tistory.com/98
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+## CloudFront Origin Access Identity(OAI)
 
-### `npm test`
+- S3 + CloudFront로 배포했을 때 CloudFront 주소로만 접근할 수 있게 설정하는 것
+- [reference](https://darrengwon.tistory.com/1345)
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Project setup (ex. Reactjs)
 
-### `npm run build`
+```
+npx create-react-app react-aws-cloudformation --template typescript
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```
+npm i -D serverless serverless-s3-sync serverless-stack-termination-protection
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```
+npm run build
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Local deploy
 
-### `npm run eject`
+```
+npm i -g serverless
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+```
+sls --version
+```
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```
+serverless config credentials --provider aws --key 'aws_access_key_id' --secret 'aws_secret_access_key'
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+### aws credential
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+- vi ~/.aws/credential
+- 여러 계정을 쓰는 경우 `[default]` 에 이름 지정해서 사용
+- example
 
-## Learn More
+  ```
+  [default]
+  aws_access_key_id=ASLKDJKLSAJDLA
+  aws_secret_access_key=ZXCOIXJCO/asdaweqw121
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+  [tag1]
+  aws_access_key_id=ASLKDJKLSAJDLA
+  aws_secret_access_key=ZXCOIXJCO/asdaweqw121
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+  [tag2]
+  aws_access_key_id=QOKWPQWPOQK
+  aws_secret_access_key=GJPSOJDPWEQ/eroeiroeir1
+  ...
+  ```
+
+- deploy command examples
+  ```
+  (default)sls deploy
+  ```
+  ```
+  AWS_PROFILE=tag1 sls deploy
+  ```
+
+### AWS CloudFormation References
+
+- Templates
+  - s3 bucket: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/quickref-s3.html#scenario-s3-bucket-website-customdomain
+  - cloudfront: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/quickref-cloudfront.html
+- Resources and Properties
+  - s3 bucket: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-s3-bucket.html#cfn-s3-bucket-bucketname
+  - cloudfront: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/AWS_CloudFront.html
+  - s3 bucket policy: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-s3-policy.html
+- Resource Attribute: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-product-attribute-reference.html
+
+- Serverless Framework References
+
+  - serverless-s3-sync(plugin for s3 bucket upload): https://www.serverless.com/plugins/serverless-s3-sync
+  - serverless-stack-termination-protection: https://www.npmjs.com/package/serverless-stack-termination-protection
+
+- React + Serverless deploy
+  - https://ichi.pro/ko/awsui-s3-mich-cloudfronte-seobeoliseu-react-aeb-saengseong-mich-baepo-87428259930096
+
+### Purge CDN
+
+- CDN 을 사용한다면, 만약에 프로젝트에 업데이트가 발생했을 때 기존에 CDN 에 퍼져있는 파일들을 새로고침 해주어야 한다. 해당 작업을 처리하기 위해선 Purge, 혹은 Invaldiation 이라는 작업을 해주어야 한다. CDN 에 퍼져있는 파일을 제거처리함으로서 새로 받아오게끔 하는 방식.
+- https://react-etc.vlpt.us/08.deploy-s3.html
